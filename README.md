@@ -60,3 +60,21 @@ The app automatically remembers your preferences using a persistent cache layer:
 // Recalling user data on initialization
 amountInp.value = localStorage.getItem('v_amt') || "1.00";
 fromSel.value = localStorage.getItem('v_from') || "USD";
+
+---
+## 📉 Real-Time Analytics
+The app doesn't just show numbers; it shows trends. By calculating a 10-day lookback period, it renders a custom gradient-filled sparkline:
+
+'''javascript
+const start = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+// Fetches history and updates the UI instantly on every input change
+
+---
+## 👨‍💻 Developed By
+Yogeshwaran V
+
+---
+## 📜 License
+This project is open-source and available under the MIT License.
+
+---
