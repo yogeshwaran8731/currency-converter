@@ -2,222 +2,289 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexGen Currency Converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Currency Converter | Yogeshwaran V</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            --card-bg: rgba(255, 255, 255, 0.07);
-            --accent-color: #00f2fe;
-            --text-color: #ffffff;
+            --accent: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.15);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
 
         body {
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             background: var(--bg-gradient);
-            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 20px;
             overflow: hidden;
         }
 
-        /* Ambient Background Glows */
-        .glow {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: var(--accent-color);
-            filter: blur(150px);
-            opacity: 0.2;
-            z-index: -1;
-            animation: move 10s infinite alternate;
-        }
-
-        @keyframes move {
-            from { transform: translate(-50%, -50%); }
-            to { transform: translate(50%, 50%); }
-        }
-
-        .converter-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 40px;
+        .container {
+            background: var(--glass);
+            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--border);
             border-radius: 32px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 400px;
-            text-align: center;
+            max-width: 420px;
+            padding: 30px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            z-index: 10;
         }
 
         h1 {
+            font-size: 1.2rem;
             font-weight: 300;
-            letter-spacing: -1px;
-            margin-bottom: 30px;
-            background: linear-gradient(to right, #fff, #a5a5a5);
-            background-clip: text;
+            text-align: center;
+            margin-bottom: 25px;
+            letter-spacing: 4px;
+            background: linear-gradient(to bottom, #fff, #888);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            opacity: 0.6;
-        }
+        .input-box { margin-bottom: 15px; }
+        label { font-size: 0.65rem; text-transform: uppercase; opacity: 0.5; margin-left: 5px; display: block; margin-bottom: 5px; }
 
         input, select {
             width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
             border-radius: 12px;
+            padding: 12px;
             color: white;
-            font-size: 1.1rem;
+            font-size: 16px;
             outline: none;
-            transition: 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input,select{
+            color: white;
+            background-color: #24243e;
         }
 
-        input:focus, select:focus {
-            border-color: var(--accent-color);
-            background: rgba(255, 255, 255, 0.1);
-        }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
 
-        .currency-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+        .chart-container { height: 100px; margin: 15px 0; background: rgba(0,0,0,0.1); border-radius: 15px; padding: 5px; }
 
-        .result-container {
-            margin-top: 30px;
+        .result-display {
+            text-align: center;
             padding: 20px;
-            background: rgba(0, 242, 254, 0.1);
-            border-radius: 16px;
-            border: 1px dashed rgba(0, 242, 254, 0.3);
+            background: rgba(0,242,254,0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(0,242,254,0.1);
         }
 
-        #result-text {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--accent-color);
-        }
+        #rate-val { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
 
-        .last-updated {
-            font-size: 0.7rem;
+        /* Credits Section */
+        .credits {
+            margin-top: 20px;
+            font-size: 0.6rem;
+            text-align: center;
             opacity: 0.4;
-            margin-top: 15px;
+            letter-spacing: 1.5px;
         }
 
-        /* Custom Scrollbar for Select */
-        select option {
-            background: #24243e;
+        /* Fixed Social Icons (Bottom Right) */
+        .social-ctc {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .social-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--glass);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .social-icon:hover {
+            transform: translateY(-5px) scale(1.1);
+            background: var(--accent);
+            color: #0f0c29;
+            border-color: var(--accent);
+        }
+
+        /* Ambient Background */
+        .glow-ball {
+            position: absolute;
+            width: 300px; height: 300px;
+            background: var(--accent);
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.15;
+            border-radius: 50%;
+            animation: float 20s infinite alternate;
+        }
+
+        @keyframes float {
+            0% { transform: translate(-10%, -10%); }
+            100% { transform: translate(50%, 50%); }
         }
     </style>
 </head>
 <body>
-    <div class="glow"></div>
+    <div class="glow-ball"></div>
     
-    <div class="converter-card">
+    <div class="container">
         <h1>NexGen FX</h1>
         
-        <div class="input-group">
+        <div class="input-box">
             <label>Amount</label>
-            <input type="number" id="amount" value="1.00" step="0.01">
+            <input type="number" id="amount" placeholder="0.00">
         </div>
 
-        <div class="currency-row">
-            <div class="input-group">
+        <div class="row">
+            <div>
                 <label>From</label>
-                <select id="fromCurrency"></select>
+                <select id="from"></select>
             </div>
-            <div class="input-group">
+            <div>
                 <label>To</label>
-                <select id="toCurrency"></select>
+                <select id="to"></select>
             </div>
         </div>
 
-        <div class="result-container">
-            <div id="result-text">0.00</div>
-            <div class="last-updated" id="lastUpdated">Fetching latest rates...</div>
+        <div class="chart-container">
+            <canvas id="sparkline"></canvas>
+        </div>
+
+        <div class="result-display">
+            <div id="rate-val">--.--</div>
+            <label id="last-sync">Syncing Live Data...</label>
+        </div>
+
+        <div class="credits">
+            DESIGNED AND DEVELOPED BY <br> <strong style="color: #00f2fe;">YOGESHWARAN V</strong>
         </div>
     </div>
 
-    <script>
-        const amountEl = document.getElementById('amount');
-        const fromEl = document.getElementById('fromCurrency');
-        const toEl = document.getElementById('toCurrency');
-        const resultEl = document.getElementById('result-text');
-        const updateEl = document.getElementById('lastUpdated');
+    <div class="social-ctc">
+        <a href="https://github.com/yogeshwaran8731/currency-converter" target="_blank" class="social-icon" title="GitHub">
+            <i data-lucide="github"></i>
+        </a>
+        <a href="https://linkedin.com/in/yogeshwaran-v-200785303" target="_blank" class="social-icon" title="LinkedIn">
+            <i data-lucide="linkedin"></i>
+        </a>
+    </div>
 
-        // Initialize App
+    <script>
+        // Lucide Icons Initialization
+        lucide.createIcons();
+
+        const amountInp = document.getElementById('amount');
+        const fromSel = document.getElementById('from');
+        const toSel = document.getElementById('to');
+        const rateDisp = document.getElementById('rate-val');
+        const syncDisp = document.getElementById('last-sync');
+        let chart;
+
         async function init() {
             try {
                 const res = await fetch('https://api.frankfurter.app/currencies');
                 const data = await res.json();
                 
-                // Populate Dropdowns
-                Object.keys(data).forEach(code => {
-                    const option1 = new Option(code, code);
-                    const option2 = new Option(code, code);
-                    fromEl.add(option1);
-                    toEl.add(option2);
+                Object.keys(data).forEach(curr => {
+                    fromSel.add(new Option(curr, curr));
+                    toSel.add(new Option(curr, curr));
                 });
 
-                // Default values
-                fromEl.value = 'USD';
-                toEl.value = 'EUR';
-                
-                convert();
-            } catch (err) {
-                resultEl.innerText = "Error loading currencies";
-            }
+                // CACHE MEMORY RECALL
+                amountInp.value = localStorage.getItem('v_amt') || "1.00";
+                fromSel.value = localStorage.getItem('v_from') || "USD";
+                toSel.value = localStorage.getItem('v_to') || "EUR";
+
+                updateData();
+            } catch (e) { rateDisp.innerText = "Connection Error"; }
         }
 
-        // Conversion Logic
-        async function convert() {
-            const amount = amountEl.value;
-            const from = fromEl.value;
-            const to = toEl.value;
+        async function updateData() {
+            const amt = amountInp.value || 0;
+            const f = fromSel.value;
+            const t = toSel.value;
 
-            if (from === to) {
-                resultEl.innerText = `${amount} ${to}`;
-                return;
-            }
+            // CACHE SAVING
+            localStorage.setItem('v_amt', amt);
+            localStorage.setItem('v_from', f);
+            localStorage.setItem('v_to', t);
+
+            if(f === t) { rateDisp.innerText = amt; return; }
 
             try {
-                const res = await fetch(`https://api.frankfurter.app/latest?amount=${amount}&from=${from}&to=${to}`);
+                const res = await fetch(`https://api.frankfurter.app/latest?amount=${amt}&from=${f}&to=${t}`);
                 const data = await res.json();
+                rateDisp.innerText = `${data.rates[t].toFixed(2)} ${t}`;
+                syncDisp.innerText = `Live: ${new Date().toLocaleTimeString()}`;
                 
-                const convertedValue = data.rates[to];
-                resultEl.innerText = `${convertedValue.toFixed(2)} ${to}`;
-                updateEl.innerText = `Last updated: ${data.date}`;
-            } catch (err) {
-                resultEl.innerText = "API Error";
-            }
+                fetchHistory(f, t);
+            } catch (e) {}
         }
 
-        // Event Listeners
-        [amountEl, fromEl, toEl].forEach(el => {
-            el.addEventListener('input', convert);
-        });
+        async function fetchHistory(f, t) {
+            const end = new Date().toISOString().split('T')[0];
+            const start = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            const res = await fetch(`https://api.frankfurter.app/${start}..${end}?from=${f}&to=${t}`);
+            const data = await res.json();
+            const values = Object.values(data.rates).map(r => r[t]);
+            renderChart(values);
+        }
 
+        function renderChart(pts) {
+            if(chart) chart.destroy();
+            const ctx = document.getElementById('sparkline').getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 0, 100);
+            grad.addColorStop(0, 'rgba(0, 242, 254, 0.4)');
+            grad.addColorStop(1, 'transparent');
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: pts,
+                    datasets: [{
+                        data: pts,
+                        borderColor: '#00f2fe',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: true,
+                        backgroundColor: grad,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } }
+                }
+            });
+        }
+
+        [amountInp, fromSel, toSel].forEach(el => el.addEventListener('input', updateData));
         init();
     </script>
 </body>
